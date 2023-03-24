@@ -40,8 +40,34 @@ class Main:
             if event.type == pygame.QUIT:
                 self.running = False
 
-    def update(self):
-        pass
+    def update(self, screen):
+
+        FPS = 30
+        self.screen = pygame.display.set_mode(screen)
+        clock = pygame.time.Clock()
+
+        def blit_text(surface, text, pos, font, color):
+            words = text.split(' ')  # 2D array where each row is a list of words.
+            space = font.size(' ')[0]  # The width of a space.
+            max_width, max_height = surface.get_size()
+            x, y = pos
+            for word in words:
+                print(word)
+                word_surface = font.render(word, 0, color)
+                word_width, word_height = word_surface.get_size()
+                if x + word_width >= max_width:
+                    x = pos[0]  # Reset the x.
+                    y += word_height  # Start on new row.
+                surface.blit(word_surface, (x, y))
+                x += word_width + space
+            x = pos[0]  # Reset the x.
+            y += word_height  # Start on new row.
+
+        while True:
+            dt = clock.tick(FPS) / 1000
+
+            blit_text(screen, self.text, (20, 300), self.font_text, WHITE)
+            pygame.display.update()
 
     def display(self):
         
