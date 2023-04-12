@@ -34,7 +34,7 @@ class Main:
         self.table = lire_donnees_csv("dictout.csv")
         # print(self.table)
         self.mots = []
-        self.nb_mots = 16
+        self.nb_mots = 20
         for i in range(self.nb_mots):
             self.mots.append(self.table[random.randint(0, len(self.table) - 1)]["mot"])
         self.text = " ".join([mot for mot in self.mots])
