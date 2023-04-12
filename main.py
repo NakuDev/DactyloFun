@@ -16,6 +16,12 @@ def lire_donnees_csv(chemin):
     fichier.close()
     return table
 
+def ecrire_donnees_csv(table, sortie):
+    f = open(sortie, "w")
+    w = csv.DictWriter(f, table[0].keys())  # Création d'un "stylo"
+    w.writeheader()  # Le stylo écrit dans le fichier les descripteurs
+    w.writerows(table)  # Le stylo écrit les données de table
+    f.close()
 
 class Main:
 
@@ -64,7 +70,7 @@ class Main:
                     self.timer_started = True
                     self.start_time = pygame.time.get_ticks()
 
-            if event.type == pygame.MOUSEBUTTONDOWN and self.finished:
+            if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
                 if self.replay_button.collidepoint(mouse_pos):
                     self.reset_game()
@@ -100,8 +106,8 @@ class Main:
         self.text = " ".join([mot for mot in self.mots])
         self.text_surface = self.font_text.render(" ".join([mot for mot in self.mots]), True, WHITE)
         self.input_text = ""
-        self.full_input_text = ""  # Ajout d'une variable pour stocker l'ensemble du texte saisi
-        self.typed_characters = 0  # Ajout d'une variable pour compter le nombre de caractères tapés
+        self.full_input_text = ""
+        self.typed_characters = 0
         self.displayed_input_text = ""
         self.complete_input_text = ""
         self.finished = False
@@ -120,7 +126,7 @@ class Main:
 
     def calculate_wpm(self):
         elapsed_time = (pygame.time.get_ticks() - self.start_time) / 1000 / 60 # Convertir en minutes
-        words = len(self.full_input_text.split())
+        words = self.typed_characters//5
         wpm = (words / elapsed_time)
         return round(wpm, 1)
 
@@ -141,20 +147,6 @@ class Main:
 
     # ----------------------------- Data saving ------------------------------------#
 
-    # csv useful functions
-    def lire_donnees_csv(chemin):
-        fichier = open(chemin)
-        table = list(csv.DictReader(fichier))
-        fichier.close()
-        return table
-
-    def ecrire_donnees_csv(self, table, sortie):
-        f = open(sortie, "w")
-        w = csv.DictWriter(f, table[0].keys())  # Création d'un "stylo"
-        w.writeheader()  # Le stylo écrit dans le fichier les descripteurs
-        w.writerows(table)  # Le stylo écrit les données de table
-        f.close()
-
     def save_data(self):
         try: table = lire_donnees_csv("save.csv")
         except: table = []
@@ -162,7 +154,7 @@ class Main:
             "speed": self.wpm,
             "accuracy": self.accuracy
         })
-        self.ecrire_donnees_csv(table, "save.csv")
+        ecrire_donnees_csv(table, "save.csv")
 
 
     # ----------------------------- Display ------------------------------------#
@@ -284,16 +276,16 @@ class Main:
         else:
             last10 = table[len(table) - 10:]
             moy1_speed = round(sum(float(i["speed"]) for i in table) / len(table), 1)
-            moy1_acc = round(sum(float(i["accuracy"]) for i in table) / len(table), 3)
+            moy1_acc = round(sum(float(i["accuracy"]) for i in table) / len(table)*100, 3)
             moy2_speed = round(sum(float(i["speed"]) for i in last10) / len(table), 1)
-            moy2_acc = round(sum(float(i["accuracy"]) for i in last10) / len(table), 3)
+            moy2_acc = round(sum(float(i["accuracy"]) for i in last10) / len(table)*100, 3)
 
             titre1 = "Moyenne générale :"
             titre1_render = self.font_text.render(titre1, True, WHITE)
             self.screen.blit(titre1_render, (
                 self.screen.get_width() // 2 - titre1_render.get_width() // 2,
                 self.screen.get_height() * 0.2 - titre1_render.get_height() // 2))
-            stats_text1 = f"Vitesse: {moy1_speed}   Précision: {moy1_acc*100}%"
+            stats_text1 = f"Vitesse: {moy1_speed}   Précision: {moy1_acc}%"
             stats_render1 = self.font_text.render(stats_text1, True, WHITE)
             self.screen.blit(stats_render1, (
                 self.screen.get_width() // 2 - stats_render1.get_width() // 2,
@@ -303,7 +295,7 @@ class Main:
             self.screen.blit(titre2_render, (
                 self.screen.get_width() // 2 - titre2_render.get_width() // 2,
                 self.screen.get_height() * 0.5 - titre2_render.get_height() // 2))
-            stats_text2 = f"Vitesse: {moy1_speed}   Précision: {moy1_acc*100}%"
+            stats_text2 = f"Vitesse: {moy1_speed}   Précision: {moy1_acc}%"
             stats_render2 = self.font_text.render(stats_text2, True, WHITE)
             self.screen.blit(stats_render1, (
                 self.screen.get_width() // 2 - stats_render2.get_width() // 2,
@@ -321,12 +313,13 @@ class Main:
             self.draw_writing_box()
             self.draw_input_text()
 
+            self.draw_replay_button()
+
             if self.finished:
-                wpm_text = f"Vitesse: {self.wpm} MPM   Précision: {self.accuracy*100}%"
+                wpm_text = f"Vitesse: {self.wpm} MPM   Précision: {round(self.accuracy*100,1)}%"
                 wpm_render = self.font_text.render(wpm_text, True, WHITE)
                 self.screen.blit(wpm_render, (
                     self.screen.get_width() // 2 - wpm_render.get_width() // 2, self.screen.get_height() * 0.8))
-                self.draw_replay_button()
 
             pygame.draw.rect(self.screen, WHITE, self.new_page_button)
         else:

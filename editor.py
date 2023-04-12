@@ -17,9 +17,9 @@ def ecrire_donnees_csv(table, sortie):
     f.close()
 
 
-df = lire_donnees_csv("dict2.csv")
+df = lire_donnees_csv("dictout.csv")
 
 for word in df:
-    word["taille"] = len(word["mot"])
+    word["mot"]
 
 ecrire_donnees_csv(df, "dictout.csv")
